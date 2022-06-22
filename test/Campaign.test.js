@@ -44,4 +44,10 @@ describe('Campaigns', () => {
         const minimumContribution = await campaign.methods.minimumContribution().call();
         assert.equal(minimumContribution, web3.utils.toWei('100', 'wei'));
     });
+
+    //test if the campaign has the correct manager
+    it('has the correct manager', async () => {
+        const manager = await campaign.methods.manager().call();
+        assert.equal(manager, accounts[0]);
+    });
 })
