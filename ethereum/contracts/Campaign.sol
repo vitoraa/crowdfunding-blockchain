@@ -29,7 +29,7 @@ contract Campaign {
     address public manager;
     uint public minimumContribution;
     mapping(address => bool) public approvers;
-    uint approversCount;
+    uint public approversCount;
 
     constructor(uint minimum, address creator) {
         manager = creator;
