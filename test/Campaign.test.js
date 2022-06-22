@@ -10,12 +10,21 @@ let accounts;
 let factory;
 let campaignAddress;
 let campaign;
+let manager;
+
+const contribute = (account, amount) => {
+    return campaign.methods.contribute().send({
+      from: account,
+      value: amount
+    });
+  };
     
 beforeEach(async () => {
     accounts = await web3.eth.getAccounts();
+    manager = accounts[0];
     factory = await new web3.eth.Contract(compiledFactory.abi)
         .deploy({data: compiledFactory.evm.bytecode.object})
-        .send({from: accounts[0], gas: '10000000'});
+        .send({from: manager, gas: '10000000'});
     
     await factory.methods.createCampaign('100').send({
         from: accounts[0],
@@ -50,4 +59,10 @@ describe('Campaigns', () => {
         const manager = await campaign.methods.manager().call();
         assert.equal(manager, accounts[0]);
     });
+
+    //test if the minimumContribution is correctly set
+    it('requires a minimum amount of ether to enter', async () => {
+        await assert.rejects(contribute(manager, '101'));
+        await assert.doesNotReject(contribute(manager, '101'));
+      });
 })
