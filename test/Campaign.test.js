@@ -31,4 +31,11 @@ describe('Campaigns', () => {
         assert.ok(factory.options.address);
         assert.ok(campaign.options.address);
     });
+
+    //test if getDeployedCampaigns returns the correct number of campaigns
+    it('has a getDeployedCampaigns function', async () => {
+        const campaigns = await factory.methods.getDeployedCampaigns().call();
+        assert.equal(campaigns.length, 1);
+        assert.equal(campaigns[0], campaign.options.address);
+    });
 })
