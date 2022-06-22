@@ -25,6 +25,13 @@ const createRequest = (account, amount, description, recipient) => {
         gas: '1000000'
     });
 }
+
+const approveRequest = (account, requestId) => {
+    return campaign.methods.approveRequest(requestId).send({
+        from: account,
+        gas: '1000000'
+    });
+}
     
 beforeEach(async () => {
     accounts = await web3.eth.getAccounts();
@@ -107,27 +114,48 @@ describe('Campaigns', () => {
     //test if only the manager can create a request
     it('only manager can create a request', async () => {
         const notAManager = accounts[2];
-        await assert.rejects(campaign.methods.createRequest('Buy batteries', '100', accounts[2]).send({
-            from: notAManager,
-            gas: '1000000'
-        }));
+        await assert.rejects(createRequest(notAManager, '100', 'Buy batteries', accounts[2]));
     });
 
     //test if approveRequest function works
     it('approves a request', async () => {
-        await campaign.methods.createRequest('Buy batteries', '100', accounts[1]).send({
+        await createRequest(manager, '100', 'Buy batteries', accounts[1]);
+
+        await contribute(accounts[1], '200');
+
+        await approveRequest(accounts[1], 0);
+
+        const request = await campaign.methods.requests(0).call();
+        assert.equal(request.approvalCount, 1);
+    });
+
+    //test processes requests
+    it('processes requests', async () => {
+        await createRequest(manager, web3.utils.toWei('2', 'ether'), 'Buy batteries', accounts[1]);
+
+        await contribute(accounts[1], web3.utils.toWei('2', 'ether'));
+
+        await approveRequest(accounts[1], 0);
+
+        let preBalance = await web3.eth.getBalance(accounts[1]);
+        preBalance = web3.utils.fromWei(preBalance, 'ether');
+        preBalance = parseFloat(preBalance);
+        console.log('preBalance of receiver acquired...');
+        console.log('preBalance = ', preBalance);
+
+        await campaign.methods.finalizeRequest(0).send({
             from: manager,
             gas: '1000000'
         });
 
-        await contribute(accounts[1], '200');
-
-        await campaign.methods.approveRequest(0).send({
-            from: accounts[1],
-            gas: '1000000'
-        });
-
-        const request = await campaign.methods.requests(0).call();
-        assert.equal(request.approvalCount, 1);
+        console.log('request finalized...');
+        // check money has been tranferred
+        // Note:  ganache initialises accounts with 100 ether each time
+        let postBalance = await web3.eth.getBalance(accounts[1]);
+        postBalance = web3.utils.fromWei(postBalance, 'ether');
+        postBalance = parseFloat(postBalance);
+        if(postBalance > preBalance) console.log('request paid...');
+        console.log('transaction postBalance = ', postBalance);
+        assert(postBalance > preBalance);
     });
 })
