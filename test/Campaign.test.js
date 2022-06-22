@@ -38,4 +38,10 @@ describe('Campaigns', () => {
         assert.equal(campaigns.length, 1);
         assert.equal(campaigns[0], campaign.options.address);
     });
+
+    //test if the campaign has the correct minimum contribution
+    it('has a minimumContribution function', async () => {
+        const minimumContribution = await campaign.methods.minimumContribution().call();
+        assert.equal(minimumContribution, web3.utils.toWei('100', 'wei'));
+    });
 })
