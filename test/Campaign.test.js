@@ -90,7 +90,7 @@ describe('Campaigns', () => {
     //test if create request function works
     it('creates a request', async () => {
         await campaign.methods.createRequest('Buy batteries', '100', accounts[1]).send({
-            from: accounts[0],
+            from: manager,
             gas: '1000000'
         });
 
@@ -100,4 +100,12 @@ describe('Campaigns', () => {
         assert.equal(request.recipient, accounts[1]);
     });
 
+    //test if only the manager can create a request
+    it('only manager can create a request', async () => {
+        const notAManager = accounts[2];
+        await assert.rejects(campaign.methods.createRequest('Buy batteries', '100', accounts[2]).send({
+            from: notAManager,
+            gas: '1000000'
+        }));
+    });
 })
