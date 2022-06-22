@@ -56,13 +56,21 @@ describe('Campaigns', () => {
 
     //test if the campaign has the correct manager
     it('has the correct manager', async () => {
-        const manager = await campaign.methods.manager().call();
-        assert.equal(manager, accounts[0]);
+        const currentManager = await campaign.methods.manager().call();
+        assert.equal(manager, currentManager);
     });
 
     //test if the minimumContribution is correctly set
     it('requires a minimum amount of ether to enter', async () => {
-        await assert.rejects(contribute(manager, '101'));
+        await assert.rejects(contribute(manager, '100'));
         await assert.doesNotReject(contribute(manager, '101'));
-      });
+    });
+
+    //test if after the contribution the quantity of approvers is correctly updated
+    it('tracks the contribution', async () => {
+        await contribute(accounts[1], '200');
+        await contribute(accounts[2], '200');
+        const quantity = await campaign.methods.approversCount().call();
+        assert.equal(quantity, 2);
+    });
 })
