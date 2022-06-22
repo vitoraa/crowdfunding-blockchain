@@ -73,4 +73,31 @@ describe('Campaigns', () => {
         const quantity = await campaign.methods.approversCount().call();
         assert.equal(quantity, 2);
     });
+
+    //test if the count of approvers is correctly updated
+    it('tracks the approvers', async () => {
+        await contribute(accounts[1], '200');
+        const isContributor = await campaign.methods.approvers(accounts[1]).call();
+        assert(isContributor);
+    });
+
+    //test if it is not possible to contribute more the once
+    it('limits the amount of contributions', async () => {
+        await contribute(accounts[1], '200');
+        await assert.rejects(contribute(accounts[1], '200'));
+    });
+
+    //test if create request function works
+    it('creates a request', async () => {
+        await campaign.methods.createRequest('Buy batteries', '100', accounts[1]).send({
+            from: accounts[0],
+            gas: '1000000'
+        });
+
+        const request = await campaign.methods.requests(0).call();
+        assert.equal(request.description, 'Buy batteries');
+        assert.equal(request.value, '100');
+        assert.equal(request.recipient, accounts[1]);
+    });
+
 })
