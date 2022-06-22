@@ -108,4 +108,22 @@ describe('Campaigns', () => {
             gas: '1000000'
         }));
     });
+
+    //test if approveRequest function works
+    it('approves a request', async () => {
+        await campaign.methods.createRequest('Buy batteries', '100', accounts[1]).send({
+            from: manager,
+            gas: '1000000'
+        });
+
+        await contribute(accounts[1], '200');
+
+        await campaign.methods.approveRequest(0).send({
+            from: accounts[1],
+            gas: '1000000'
+        });
+
+        const request = await campaign.methods.requests(0).call();
+        assert.equal(request.approvalCount, 1);
+    });
 })
