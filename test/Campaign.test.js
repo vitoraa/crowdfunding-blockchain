@@ -17,7 +17,14 @@ const contribute = (account, amount) => {
       from: account,
       value: amount
     });
-  };
+};
+
+const createRequest = (account, amount, description, recipient) => {
+    return campaign.methods.createRequest(description, amount, recipient).send({
+        from: account,
+        gas: '1000000'
+    });
+}
     
 beforeEach(async () => {
     accounts = await web3.eth.getAccounts();
@@ -89,10 +96,7 @@ describe('Campaigns', () => {
 
     //test if create request function works
     it('creates a request', async () => {
-        await campaign.methods.createRequest('Buy batteries', '100', accounts[1]).send({
-            from: manager,
-            gas: '1000000'
-        });
+        await createRequest(manager, '100', 'Buy batteries', accounts[1]);
 
         const request = await campaign.methods.requests(0).call();
         assert.equal(request.description, 'Buy batteries');
